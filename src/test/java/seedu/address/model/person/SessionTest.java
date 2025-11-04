@@ -93,4 +93,11 @@ public class SessionTest {
         Session otherWeekly = Session.fromString("WEEKLY:TUE-1000-1100");
         assertFalse(weekly.conflictsWith(otherWeekly));
     }
+
+    @Test
+    public void conflictsWith_sameBiweekly_returnsFalse() {
+        Session first = Session.fromString("BIWEEKLY:SAT-1300-1400");
+        Session second = Session.fromString("biweekly:sat-1300-1400");
+        assertFalse(first.conflictsWith(second));
+    }
 }

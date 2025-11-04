@@ -16,6 +16,8 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_SESSION;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_WEIGHT;
 
+import java.util.Optional;
+
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -66,6 +68,8 @@ public class AddCommand extends Command {
     public static final String MESSAGE_DUPLICATE_PERSON = "This person already exists in the address book";
     public static final String MESSAGE_CONFLICTING_SESSION =
             "This session slot is already booked by another person";
+    public static final String MESSAGE_CONFLICTING_SESSION_WITH_SLOT =
+            "The session slot %s is already booked by another person";
 
     private final Person toAdd;
 
@@ -86,7 +90,14 @@ public class AddCommand extends Command {
         }
 
         if (model.hasSessionConflict(toAdd)) {
-            throw new CommandException(MESSAGE_CONFLICTING_SESSION);
+            Optional<String> conflictingSlot = model.getAddressBook().getPersonList().stream()
+                    .map(Person::getSession)
+                    .map(session -> session.findConflictingSlot(toAdd.getSession()))
+                    .flatMap(Optional::stream)
+                    .findFirst();
+            throw new CommandException(conflictingSlot
+                    .map(slot -> String.format(MESSAGE_CONFLICTING_SESSION_WITH_SLOT, slot))
+                    .orElse(MESSAGE_CONFLICTING_SESSION));
         }
 
         model.addPerson(toAdd);
