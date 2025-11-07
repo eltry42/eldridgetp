@@ -45,6 +45,7 @@ public class SortByPaidCommandTest {
 
         assertEquals(SortByPaidCommand.MESSAGE_SORT_SUCCESS, commandResult.getFeedbackToUser());
         assertTrue(modelStub.isSortPersonListByPaidCalled());
+        assertTrue(modelStub.isResetPersonListOrderCalled());
     }
 
     /**
@@ -52,6 +53,7 @@ public class SortByPaidCommandTest {
      */
     private static class ModelStub implements Model {
         private boolean sortPersonListByPaidCalled = false;
+        private boolean resetPersonListOrderCalled = false;
 
         @Override
         public void setUserPrefs(ReadOnlyUserPrefs userPrefs) {
@@ -149,7 +151,11 @@ public class SortByPaidCommandTest {
 
         @Override
         public void resetPersonListOrder() {
+            resetPersonListOrderCalled = true;
+        }
 
+        public boolean isResetPersonListOrderCalled() {
+            return resetPersonListOrderCalled;
         }
     }
 }

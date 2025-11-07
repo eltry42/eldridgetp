@@ -342,8 +342,34 @@ public class Session {
             return conflictsMonthlyWithRecurring(other, this);
         }
 
-        // Both weekly or biweekly
+        // Allow biweekly sessions to share the same slot since they can occur on alternate weeks.
+        if (type == SessionType.BIWEEKLY && other.type == SessionType.BIWEEKLY) {
+            return false;
+        }
+
+        // Both weekly or weekly/biweekly combinations
         return hasOverlappingSlots(other);
+    }
+
+    /**
+     * Returns the canonical string of the first conflicting recurring slot with {@code other}, if any.
+     */
+    public Optional<String> findConflictingSlot(Session other) {
+        requireNonNull(other);
+        if (!isRecurring() || !other.isRecurring()) {
+            return Optional.empty();
+        }
+        if (type == SessionType.BIWEEKLY && other.type == SessionType.BIWEEKLY) {
+            return Optional.empty();
+        }
+        for (RecurringSlot slot : recurringSlots) {
+            for (RecurringSlot otherSlot : other.recurringSlots) {
+                if (slot.overlaps(otherSlot)) {
+                    return Optional.of(slot.toCanonicalString());
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     private boolean occursOn(LocalDateTime candidate) {
@@ -369,6 +395,10 @@ public class Session {
             }
         }
         return false;
+    }
+
+    private boolean isRecurring() {
+        return type == SessionType.WEEKLY || type == SessionType.BIWEEKLY;
     }
 
     /**
